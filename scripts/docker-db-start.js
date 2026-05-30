@@ -3,7 +3,7 @@
 const { spawnSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");
-const { spawnSafe, execShell, isWin } = require("./run-safe.js");
+const { spawnSafe, execShell, sleepSync, isWin } = require("./run-safe.js");
 
 const root = path.resolve(__dirname, "..");
 const composeDb = path.join(root, "database", "compose.yaml");
@@ -49,8 +49,7 @@ async function main() {
     if (name) {
       console.log("⚠️  Port 15432 in use by " + name + ". Stopping it...");
       execShell("docker stop " + name, { cwd: root });
-      if (isWin) execShell("timeout /t 2 /nobreak > nul", { cwd: root });
-      else execShell("sleep 2", { cwd: root });
+      sleepSync(2000);
     } else {
       console.error("❌ Port 15432 is in use. Free it or change the port in database/compose.yaml");
       process.exit(1);
@@ -60,8 +59,7 @@ async function main() {
   console.log("📦 Starting database and Adminer...");
   runCompose(["up", "-d", svc, adminerSvc]);
   console.log("⏳ Waiting for database...");
-  if (isWin) execShell("timeout /t 5 /nobreak > nul", { cwd: root });
-  else execShell("sleep 5", { cwd: root });
+  sleepSync(5000);
 
   for (let i = 0; i < 30; i++) {
     if (runComposeQuiet(["exec", "-T", svc, "pg_isready", "-U", "root"])) {
@@ -69,8 +67,7 @@ async function main() {
       break;
     }
     if (i === 29) console.log("⚠️  Database slow to start");
-    else if (isWin) execShell("timeout /t 1 /nobreak > nul", { cwd: root });
-    else execShell("sleep 1", { cwd: root });
+    else sleepSync(1000);
   }
 
   console.log("\n🔧 Ensuring schema and seed are ready...");

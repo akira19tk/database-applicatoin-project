@@ -12,8 +12,13 @@ function execShell(cmd, options = {}) {
   return execSync(cmd, { shell: true, ...options });
 }
 
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
 module.exports = {
   spawnSafe,
   execShell,
+  sleepSync,
   isWin,
 };

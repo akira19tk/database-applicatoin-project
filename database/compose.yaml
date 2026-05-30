@@ -43,7 +43,7 @@ services:
     environment:
       POSTGRES_USER: root # The PostgreSQL user (useful to connect to the database)
       POSTGRES_PASSWORD: root # The PostgreSQL password (useful to connect to the database)
-      POSTGRES_DB: clinic_db # The PostgreSQL default database (automatically created at first launch)
+      POSTGRES_DB: invoices_db # The PostgreSQL default database (automatically created at first launch)
 
     ####
     ## If you want to use a `.env` file, please comment the `environment` section.
