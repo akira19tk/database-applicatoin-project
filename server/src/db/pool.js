@@ -13,7 +13,7 @@ const connectionString =
     ? (() => {
         throw new Error("DATABASE_URL is required in production. Set it in your environment.");
       })()
-    : "postgresql://root:root@localhost:15432/invoices_db");
+    : "postgresql://root:root@localhost:15432/clinic_db");
 
 export const pool = new pg.Pool({ connectionString });
 

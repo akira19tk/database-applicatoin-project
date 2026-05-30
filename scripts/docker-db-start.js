@@ -78,8 +78,8 @@ async function main() {
   } else {
     console.log("⚠️  Run manually: node database/setup_db.js");
   }
-  console.log("\n✅ Database started. Host: localhost:15432 | DB: invoices_db | User: root");
-  console.log("   Adminer (web UI): http://localhost:8080 — Server: pgdatabase | User: root | Password: root | Database: invoices_db");
+  console.log("\n✅ Database started. Host: localhost:15432 | DB: clinic_db | User: root");
+  console.log("   Adminer (web UI): http://localhost:8080 — Server: pgdatabase | User: root | Password: root | Database: clinic_db");
 }
 
 main().catch((e) => {
