@@ -35,8 +35,8 @@ export async function createPatient({ patient_name, gender, date_of_birth, blood
   const next = (Number(m) || 0) + 1;
   const patient_code = `PAT-${next.toString().padStart(3, "0")}`;
   await pool.query(
-    "INSERT INTO patient (patient_code, patient_name, gender, date_of_birth, blood_type_id) VALUES ($1,$2,$3,$4,$5)",
-    [patient_code, patient_name, gender, date_of_birth, blood_type_id || null]
+    "INSERT INTO patient (patient_code, patient_name, gender, date_of_birth, blood_type_id, id) VALUES ($1,$2,$3,$4,$5,$6)",
+    [patient_code, patient_name, gender, date_of_birth, blood_type_id || null, next]
   );
   return { patient_code };
 }
