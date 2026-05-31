@@ -32,7 +32,7 @@ export default function DataList({
     
     const [search, setSearch] = React.useState("");
     const [searchInput, setSearchInput] = React.useState("");
-    const [sortKey, setSortKey] = React.useState(null);
+    const [sortKey, setSortKey] = React.useState(columns[0]?.key);
     const [sortDir, setSortDir] = React.useState("asc");
     const [currentPage, setCurrentPage] = React.useState(1);
     const [pageSize, setPageSize] = React.useState(defaultPageSize);

@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import PatientList from "./pages/patients/PatientList.jsx";
 import PatientPage from "./pages/patients/PatientPage.jsx";
 import DoctorList from "./pages/doctors/DoctorList.jsx";
+import DoctorPage from "./pages/doctors/DoctorPage.jsx";
 import VisitList from "./pages/visits/VisitList.jsx";
 import VisitPage from "./pages/visits/VisitPage.jsx";
 import PatientBillPage from "./pages/patientBills/PatientBillPage.jsx";
@@ -73,6 +74,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/patients/:code" element={<Layout><PatientPage mode="view" /></Layout>} />
         <Route path="/patients/:code/edit" element={<Layout><PatientPage mode="edit" /></Layout>} />
         <Route path="/doctors" element={<Layout><DoctorList /></Layout>} />
+        <Route path="/doctors/new" element={<Layout><DoctorPage mode="create" /></Layout>} />
+        <Route path="/doctors/:code" element={<Layout><DoctorPage mode="view" /></Layout>} />
+        <Route path="/doctors/:code/edit" element={<Layout><DoctorPage mode="edit" /></Layout>} />
         <Route path="/visits" element={<Layout><VisitList /></Layout>} />
         <Route path="/visits/new" element={<Layout><VisitPage mode="create" /></Layout>} />
         <Route path="/visits/:code" element={<Layout><VisitPage mode="view" /></Layout>} />

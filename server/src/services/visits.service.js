@@ -1,6 +1,10 @@
 import { pool } from "../db/pool.js";
 
-export async function listVisits({ search = "", page = 1, limit = 10 } = {}) {
+export async function listVisits({ search = "", page = 1, limit = 10, sortBy = "created_at", sortDir = "desc" } = {}) {
+  const allowed = ["visit_code", "visit_type", "created_at", "patient_name"];
+  const col = allowed.includes(sortBy) ? sortBy : "created_at";
+  const dir = sortDir === "asc" ? "ASC" : "DESC";
+  const sortExpr = sortBy === "patient_name" ? `p.patient_name ${dir}` : `v.${col} ${dir}`;
   const offset = (Number(page) - 1) * Number(limit);
   const s = `%${search}%`;
   const { rows: [{ total }] } = await pool.query(
@@ -12,7 +16,7 @@ export async function listVisits({ search = "", page = 1, limit = 10 } = {}) {
             p.patient_code, p.patient_name
      FROM visit v JOIN patient p ON p.id=v.patient_id
      WHERE v.visit_code ILIKE $1 OR p.patient_name ILIKE $1 OR v.visit_type ILIKE $1
-     ORDER BY v.created_at DESC LIMIT $2 OFFSET $3`,
+     ORDER BY ${sortExpr} NULLS LAST LIMIT $2 OFFSET $3`,
     [s, Number(limit), offset]
   );
   return { data: rows, total: Number(total), page: Number(page), limit: Number(limit), totalPages: Math.ceil(Number(total) / Number(limit)) };
@@ -34,11 +38,12 @@ export async function createVisit({ patient_code, visit_type, reported_symptoms,
   if (patRes.rowCount === 0) throw Object.assign(new Error("Patient not found"), { statusCode: 404 });
   const patient_id = patRes.rows[0].id;
   const { rows: [{ m }] } = await pool.query("SELECT MAX(id) as m FROM visit");
-  const visit_code = `VST-${((Number(m) || 0) + 1).toString().padStart(3, "0")}`;
+  const next = (Number(m) || 0) + 1;
+  const visit_code = `VST-${next.toString().padStart(3, "0")}`;
   await pool.query(
-    `INSERT INTO visit (visit_code, patient_id, visit_type, reported_symptoms, blood_pressure, height, weight, temperature)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-    [visit_code, patient_id, visit_type, reported_symptoms||null, blood_pressure||null, height||null, weight||null, temperature||null]
+    `INSERT INTO visit (visit_code, patient_id, visit_type, reported_symptoms, blood_pressure, height, weight, temperature,id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+    [visit_code, patient_id, visit_type, reported_symptoms||null, blood_pressure||null, height||null, weight||null, temperature||null, next]
   );
   return { visit_code };
 }

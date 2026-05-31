@@ -14,3 +14,15 @@ export async function listDoctors(params = {}) {
 export async function getDoctor(code) {
   return unwrap(await http(`/api/doctors/${encodeURIComponent(code)}`)).data;
 }
+
+export async function createDoctor(data) {
+  return unwrap(await http("/api/doctors", { method: "POST", body: JSON.stringify(data) })).data;
+}
+
+export async function updateDoctor(code, data) {
+  return unwrap(await http(`/api/doctors/${encodeURIComponent(code)}`, { method: "PUT", body: JSON.stringify(data) })).data;
+}
+
+export async function deleteDoctor(code) {
+  return unwrap(await http(`/api/doctors/${encodeURIComponent(code)}`, { method: "DELETE" })).data;
+}
