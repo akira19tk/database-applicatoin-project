@@ -6,6 +6,7 @@ import doctorsRoutes from "./routes/doctors.routes.js";
 import visitsRoutes from "./routes/visits.routes.js";
 import configurationRoutes from "./routes/configuration.routes.js";
 import patientBillsRoutes from "./routes/patientBills.routes.js";
+import clinicReportsRoutes from "./routes/clinicReports.routes.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/doctors", doctorsRoutes);
 app.use("/api/visits", visitsRoutes);
 app.use("/api/config", configurationRoutes);
 app.use("/api/patient-bills", patientBillsRoutes);
+app.use("/api/reports", clinicReportsRoutes);
 
 const port = process.env.PORT || 4000;
 const host = process.env.HOST || "0.0.0.0";

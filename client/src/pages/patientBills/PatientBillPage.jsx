@@ -88,9 +88,12 @@ export default function PatientBillPage() {
     <div>
       <div className="page-header">
         <h3 className="page-title">Bill: {bill.bill_code}</h3>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8 }} className="no-print">
           {!editMode && (
-            <button className="btn btn-primary" onClick={() => setEditMode(true)}>Edit</button>
+            <>
+              <button className="btn btn-primary" onClick={() => setEditMode(true)}>Edit</button>
+              <button className="btn btn-outline" onClick={() => window.print()}>Print</button>
+            </>
           )}
           {editMode && (
             <button className="btn btn-outline" onClick={() => { setEditMode(false); loadBill(); }}>Cancel</button>
