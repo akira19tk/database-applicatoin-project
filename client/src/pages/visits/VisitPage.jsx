@@ -14,6 +14,7 @@ export default function VisitPage({ mode }) {
   const { code } = useParams();
   const navigate = useNavigate();
   const isCreate = mode === "create";
+  const isView = mode === "view";
   const [tab, setTab] = React.useState(0);
   const [visit, setVisit] = React.useState(null);
   const [form, setForm] = React.useState({ patient_code: "", visit_type: "OPD", reported_symptoms: "", blood_pressure: "", height: "", weight: "", temperature: "" });
@@ -109,8 +110,11 @@ export default function VisitPage({ mode }) {
   return (
     <div>
       <div className="page-header">
-        <h3 className="page-title">{isCreate ? "New Visit" : `Visit: ${code}`}</h3>
-        <Link to="/visits" className="btn btn-outline">Back</Link>
+        <h3 className="page-title">{isCreate ? "New Visit" : isView ? `Visit: ${code}` : `Edit Visit: ${code}`}</h3>
+        <div style={{ display: "flex", gap: 8 }}>
+          {isView && !isCreate && <Link to={`/visits/${code}/edit`} className="btn btn-primary">Edit</Link>}
+          <Link to="/visits" className="btn btn-outline">Back</Link>
+        </div>
       </div>
 
       {!isCreate && (
@@ -146,104 +150,114 @@ export default function VisitPage({ mode }) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div className="form-group">
                 <label className="form-label">Visit Type *</label>
-                <select className="form-control" value={form.visit_type} onChange={e => set("visit_type", e.target.value)} required>
+                <select className="form-control" value={form.visit_type} onChange={e => set("visit_type", e.target.value)} required disabled={isView}>
                   <option value="OPD">OPD (Out-Patient)</option>
                   <option value="IPD">IPD (In-Patient)</option>
                 </select>
               </div>
               <div className="form-group">
                 <label className="form-label">Blood Pressure</label>
-                <input className="form-control" placeholder="120/80" value={form.blood_pressure} onChange={e => set("blood_pressure", e.target.value)} />
+                <input className="form-control" placeholder="120/80" value={form.blood_pressure} onChange={e => set("blood_pressure", e.target.value)} disabled={isView} />
               </div>
               <div className="form-group">
                 <label className="form-label">Height (cm)</label>
-                <input type="number" step="0.1" className="form-control" value={form.height} onChange={e => set("height", e.target.value)} />
+                <input type="number" step="0.1" className="form-control" value={form.height} onChange={e => set("height", e.target.value)} disabled={isView} />
               </div>
               <div className="form-group">
                 <label className="form-label">Weight (kg)</label>
-                <input type="number" step="0.1" className="form-control" value={form.weight} onChange={e => set("weight", e.target.value)} />
+                <input type="number" step="0.1" className="form-control" value={form.weight} onChange={e => set("weight", e.target.value)} disabled={isView} />
               </div>
               <div className="form-group">
                 <label className="form-label">Temperature (°C)</label>
-                <input type="number" step="0.1" className="form-control" value={form.temperature} onChange={e => set("temperature", e.target.value)} />
+                <input type="number" step="0.1" className="form-control" value={form.temperature} onChange={e => set("temperature", e.target.value)} disabled={isView} />
               </div>
             </div>
             <div className="form-group">
               <label className="form-label">Reported Symptoms</label>
-              <textarea className="form-control" rows={3} value={form.reported_symptoms} onChange={e => set("reported_symptoms", e.target.value)} />
+              <textarea className="form-control" rows={3} value={form.reported_symptoms} onChange={e => set("reported_symptoms", e.target.value)} disabled={isView} />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? "Saving..." : isCreate ? "Create Visit" : "Save Changes"}</button>
+            {!isView && (
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? "Saving..." : isCreate ? "Create Visit" : "Save Changes"}
+              </button>
+            )}
           </form>
         )}
 
         {/* Tab 1: Appointed Doctors */}
         {!isCreate && tab === 1 && (
-          <ChartEditor title="Appointed Doctors" lines={appointedLines}
+          <ChartEditor title="Appointed Doctors" lines={appointedLines} isView={isView}
             renderLine={(line, i) => (
               <tr key={i}>
                 <td>{line.doctor_name} ({line.doctor_code})</td>
                 <td>{line.specialty || "-"}</td>
-                <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
-                  onClick={() => setAppointedLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
+                {!isView && (
+                  <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
+                    onClick={() => setAppointedLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
+                )}
               </tr>
             )}
-            headers={["Doctor", "Specialty", ""]}
-            addForm={
-              <AddDoctorForm doctors={allDoctors} selected={appointedLines.map(l => l.doctor_code)}
-                onAdd={d => setAppointedLines(ls => [...ls, d])} />
-            }
+            headers={isView ? ["Doctor", "Specialty"] : ["Doctor", "Specialty", ""]}
+            addForm={!isView && <AddDoctorForm doctors={allDoctors} selected={appointedLines.map(l => l.doctor_code)}
+              onAdd={d => setAppointedLines(ls => [...ls, d])} />}
             onSave={handleSaveAppointedDoctors} saving={saving} />
         )}
 
         {/* Tab 2: Prescription Chart */}
         {!isCreate && tab === 2 && (
-          <ChartEditor title="Prescription Chart" lines={rxLines}
+          <ChartEditor title="Prescription Chart" lines={rxLines} isView={isView}
             renderLine={(line, i) => (
               <tr key={i}>
                 <td>{line.medicine_name} ({line.medicine_code})</td>
                 <td>{line.medicine_type}</td>
                 <td>{line.quantity}</td>
                 <td style={{ fontSize: "0.85rem", color: "#64748b" }}>{line.dosage_notes || "-"}</td>
-                <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
-                  onClick={() => setRxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
+                {!isView && (
+                  <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
+                    onClick={() => setRxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
+                )}
               </tr>
             )}
-            headers={["Medicine", "Type", "Qty", "Dosage Notes", ""]}
-            addForm={<AddMedicineForm medicines={medicines} onAdd={m => setRxLines(ls => [...ls, m])} />}
+            headers={isView ? ["Medicine", "Type", "Qty", "Dosage Notes"] : ["Medicine", "Type", "Qty", "Dosage Notes", ""]}
+            addForm={!isView && <AddMedicineForm medicines={medicines} onAdd={m => setRxLines(ls => [...ls, m])} />}
             onSave={handleSavePrescription} saving={saving} />
         )}
 
         {/* Tab 3: Treatment Chart */}
         {!isCreate && tab === 3 && (
-          <ChartEditor title="Treatment Chart" lines={txLines}
+          <ChartEditor title="Treatment Chart" lines={txLines} isView={isView}
             renderLine={(line, i) => (
               <tr key={i}>
                 <td>{line.treatment_name} ({line.treatment_code})</td>
                 <td>฿{Number(line.unit_cost).toLocaleString()}</td>
                 <td>{line.quantity}</td>
                 <td style={{ fontSize: "0.85rem", color: "#64748b" }}>{line.notes || "-"}</td>
-                <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
-                  onClick={() => setTxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
+                {!isView && (
+                  <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
+                    onClick={() => setTxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
+                )}
               </tr>
             )}
-            headers={["Treatment", "Unit Cost", "Qty", "Notes", ""]}
-            addForm={<AddTreatmentForm treatments={treatments} onAdd={t => setTxLines(ls => [...ls, t])} />}
+            headers={isView ? ["Treatment", "Unit Cost", "Qty", "Notes"] : ["Treatment", "Unit Cost", "Qty", "Notes", ""]}
+            addForm={!isView && <AddTreatmentForm treatments={treatments} onAdd={t => setTxLines(ls => [...ls, t])} />}
             onSave={handleSaveTreatment} saving={saving} />
         )}
 
         {/* Tab 4: Diagnosis Chart */}
         {!isCreate && tab === 4 && (
-          <ChartEditor title="Diagnosis Chart" lines={dxLines}
+          <ChartEditor title="Diagnosis Chart" lines={dxLines} isView={isView}
             renderLine={(line, i) => (
               <tr key={i}>
                 <td>{line.condition_name} ({line.condition_code})</td>
                 <td style={{ fontSize: "0.85rem", color: "#64748b", maxWidth: 300 }}>{line.description || "-"}</td>
-                <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
-                  onClick={() => setDxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
+                {!isView && (
+                  <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
+                    onClick={() => setDxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
+                )}
               </tr>
             )}
-            headers={["Condition", "Description", ""]}
-            addForm={<AddConditionForm conditions={conditions} selected={dxLines.map(l => l.condition_code)}
+            headers={isView ? ["Condition", "Description"] : ["Condition", "Description", ""]}
+            addForm={!isView && <AddConditionForm conditions={conditions} selected={dxLines.map(l => l.condition_code)}
               onAdd={c => setDxLines(ls => [...ls, c])} />}
             onSave={handleSaveDiagnosis} saving={saving} />
         )}
@@ -261,7 +275,7 @@ export default function VisitPage({ mode }) {
   );
 }
 
-function ChartEditor({ title, lines, renderLine, headers, addForm, onSave, saving }) {
+function ChartEditor({ title, lines, renderLine, headers, addForm, onSave, saving, isView }) {
   return (
     <div>
       <h4 style={{ marginBottom: 12 }}>{title}</h4>
@@ -275,10 +289,12 @@ function ChartEditor({ title, lines, renderLine, headers, addForm, onSave, savin
           </tbody>
         </table>
       </div>
-      {addForm}
-      <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={onSave} disabled={saving}>
-        {saving ? "Saving..." : "Save"}
-      </button>
+      {!isView && addForm}
+      {!isView && (
+        <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={onSave} disabled={saving}>
+          {saving ? "Saving..." : "Save"}
+        </button>
+      )}
     </div>
   );
 }
