@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getBillByVisit, saveBillLines, addTransaction } from "../../api/patientBills.api.js";
+import { getBillByCode, saveBillLines, addTransaction } from "../../api/patientBills.api.js";
 import { getFees } from "../../api/configuration.api.js";
 
 export default function PatientBillPage() {
@@ -16,7 +16,7 @@ export default function PatientBillPage() {
   const [loading, setLoading] = React.useState(true);
 
   const loadBill = () => {
-    getBillByVisit(code).then(b => {
+    getBillByCode(code).then(b => {
       setBill(b);
       setLines(b ? b.lines.map(l => ({ ...l, _include: true })) : []);
       setLoading(false);
@@ -86,7 +86,7 @@ export default function PatientBillPage() {
     <div>
       <div className="page-header">
         <h3 className="page-title">Bill: {bill.bill_code}</h3>
-        <Link to={`/visits/${code}`} className="btn btn-outline">Back to Visit</Link>
+        <Link to={`/visits/${bill.visit_code}`} className="btn btn-outline">Back to Visit</Link>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
