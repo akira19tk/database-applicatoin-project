@@ -90,9 +90,41 @@ export async function createBillForVisit(visit_code) {
   const visit_id = vr.rows[0].id;
   const ex = await pool.query("SELECT bill_code FROM patient_bill WHERE visit_id=$1", [visit_id]);
   if (ex.rowCount) return { bill_code: ex.rows[0].bill_code };
+
   const { rows: [{ m }] } = await pool.query("SELECT MAX(id) as m FROM patient_bill");
   const bill_code = `BLL-${((Number(m)||0)+1).toString().padStart(3,"0")}`;
-  await pool.query("INSERT INTO patient_bill (bill_code, visit_id, tax) VALUES ($1,$2,7)", [bill_code, visit_id]);
+  const billRes = await pool.query(
+    "INSERT INTO patient_bill (bill_code, visit_id, tax) VALUES ($1,$2,7) RETURNING id",
+    [bill_code, visit_id]
+  );
+  const bill_id = billRes.rows[0].id;
+
+  // Auto-populate lines from treatment chart
+  const { rows: tclRows } = await pool.query(
+    `SELECT tcl.id FROM treatment_chart_line tcl
+     JOIN treatment_chart tc ON tc.id = tcl.treatment_chart_id
+     WHERE tc.visit_id = $1`, [visit_id]
+  );
+  for (const row of tclRows) {
+    await pool.query(
+      "INSERT INTO patient_bill_line (bill_header_id, charge_type, treatment_chart_line_id) VALUES ($1,'Treatment',$2)",
+      [bill_id, row.id]
+    );
+  }
+
+  // Auto-populate lines from prescription chart
+  const { rows: pclRows } = await pool.query(
+    `SELECT pcl.id FROM prescription_chart_line pcl
+     JOIN prescription_chart pc ON pc.id = pcl.prescription_chart_id
+     WHERE pc.visit_id = $1`, [visit_id]
+  );
+  for (const row of pclRows) {
+    await pool.query(
+      "INSERT INTO patient_bill_line (bill_header_id, charge_type, prescription_chart_line_id) VALUES ($1,'Medicine',$2)",
+      [bill_id, row.id]
+    );
+  }
+
   return { bill_code };
 }
 

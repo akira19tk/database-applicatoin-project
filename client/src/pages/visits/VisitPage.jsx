@@ -6,7 +6,7 @@ import { getVisit, createVisit, updateVisit, getAppointedDoctor, saveAppointedDo
   getDiagnosisChart, saveDiagnosisChart } from "../../api/visits.api.js";
 import { listPatients } from "../../api/patients.api.js";
 import { getAllDoctors, getMedicines, getTreatments, getConditions } from "../../api/configuration.api.js";
-import { createBillForVisit } from "../../api/patientBills.api.js";
+import { createBillForVisit, getBillByVisit } from "../../api/patientBills.api.js";
 
 const TABS = ["Info", "Doctors", "Prescription", "Treatment", "Diagnosis", "Bill"];
 
@@ -29,6 +29,7 @@ export default function VisitPage({ mode }) {
   const [dxLines, setDxLines] = React.useState([]);
   const [loading, setLoading] = React.useState(!isCreate);
   const [saving, setSaving] = React.useState(false);
+  const [existingBillCode, setExistingBillCode] = React.useState(null);
 
   React.useEffect(() => {
     if (!isCreate) {
@@ -42,6 +43,7 @@ export default function VisitPage({ mode }) {
       getPrescriptionChart(code).then(d => setRxLines(d?.lines || [])).catch(() => {});
       getTreatmentChart(code).then(d => setTxLines(d?.lines || [])).catch(() => {});
       getDiagnosisChart(code).then(d => setDxLines(d?.lines || [])).catch(() => {});
+      getBillByVisit(code).then(b => setExistingBillCode(b?.bill_code || null)).catch(() => {});
     }
     listPatients({ limit: 100 }).then(r => setPatients(r.data || [])).catch(() => {});
     getAllDoctors().then(setAllDoctors).catch(() => {});
@@ -59,8 +61,9 @@ export default function VisitPage({ mode }) {
         const res = await createVisit(form);
         toast.success("Visit created."); navigate(`/visits/${res.visit_code}`);
       } else {
-        await updateVisit(code, form); toast.success("Visit updated.");
-        setVisit(v => ({ ...v, ...form }));
+        await updateVisit(code, form);
+        toast.success("Visit updated.");
+        navigate(`/visits/${code}`);
       }
     } catch (err) { toast.error(err.message); } finally { setSaving(false); }
   };
@@ -100,7 +103,8 @@ export default function VisitPage({ mode }) {
   const handleGenerateBill = async () => {
     try {
       const res = await createBillForVisit(code);
-      toast.success("Bill created: " + res.bill_code);
+      setExistingBillCode(res.bill_code);
+      toast.success("Bill generated.");
       navigate(`/patient-bills/${res.bill_code}`);
     } catch (e) { toast.error(e.message); }
   };
@@ -113,6 +117,7 @@ export default function VisitPage({ mode }) {
         <h3 className="page-title">{isCreate ? "New Visit" : isView ? `Visit: ${code}` : `Edit Visit: ${code}`}</h3>
         <div style={{ display: "flex", gap: 8 }}>
           {isView && !isCreate && <Link to={`/visits/${code}/edit`} className="btn btn-primary">Edit</Link>}
+          {!isCreate && !isView && <Link to={`/visits/${code}`} className="btn btn-outline">Cancel</Link>}
           <Link to="/visits" className="btn btn-outline">Back</Link>
         </div>
       </div>
@@ -266,8 +271,21 @@ export default function VisitPage({ mode }) {
         {!isCreate && tab === 5 && (
           <div>
             <h4 style={{ marginBottom: 16 }}>Patient Bill</h4>
-            <p style={{ color: "#64748b", marginBottom: 16 }}>Generate a bill from this visit's treatment and prescription charts.</p>
-            <button className="btn btn-primary" onClick={handleGenerateBill}>Generate / View Bill</button>
+            {existingBillCode ? (
+              <div>
+                <p style={{ color: "#64748b", marginBottom: 16 }}>
+                  Bill <strong>{existingBillCode}</strong> has been created for this visit.
+                </p>
+                <Link to={`/patient-bills/${existingBillCode}`} className="btn btn-primary">View Bill</Link>
+              </div>
+            ) : (
+              <div>
+                <p style={{ color: "#64748b", marginBottom: 16 }}>
+                  No bill exists yet. Generating a bill will automatically include all treatments and prescriptions recorded for this visit.
+                </p>
+                <button className="btn btn-primary" onClick={handleGenerateBill}>Generate Bill</button>
+              </div>
+            )}
           </div>
         )}
       </div>

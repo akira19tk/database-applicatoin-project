@@ -14,6 +14,7 @@ export default function PatientBillPage() {
   const [txType, setTxType] = React.useState("Cash");
   const [saving, setSaving] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
+  const [editMode, setEditMode] = React.useState(false);
 
   const loadBill = () => {
     getBillByCode(code).then(b => {
@@ -52,6 +53,7 @@ export default function PatientBillPage() {
         }))
       });
       toast.success("Bill lines saved.");
+      setEditMode(false);
       loadBill();
     } catch (e) { toast.error(e.message); } finally { setSaving(false); }
   };
@@ -78,7 +80,7 @@ export default function PatientBillPage() {
   if (!bill) return (
     <div>
       <div className="page-header"><h3 className="page-title">Bill Not Found</h3><Link to="/visits" className="btn btn-outline">Back to Visits</Link></div>
-      <div className="card"><p style={{ color: "#64748b" }}>No bill exists for visit <strong>{code}</strong>. Go to the visit and click "Generate Bill".</p></div>
+      <div className="card"><p style={{ color: "#64748b" }}>No bill exists for this code. Go to the visit and click "Generate Bill".</p></div>
     </div>
   );
 
@@ -86,7 +88,15 @@ export default function PatientBillPage() {
     <div>
       <div className="page-header">
         <h3 className="page-title">Bill: {bill.bill_code}</h3>
-        <Link to={`/visits/${bill.visit_code}`} className="btn btn-outline">Back to Visit</Link>
+        <div style={{ display: "flex", gap: 8 }}>
+          {!editMode && (
+            <button className="btn btn-primary" onClick={() => setEditMode(true)}>Edit</button>
+          )}
+          {editMode && (
+            <button className="btn btn-outline" onClick={() => { setEditMode(false); loadBill(); }}>Cancel</button>
+          )}
+          <Link to={`/visits/${bill.visit_code}`} className="btn btn-outline">Back to Visit</Link>
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
@@ -94,38 +104,56 @@ export default function PatientBillPage() {
           <div className="card">
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
               <h4>Charge Lines</h4>
-              <button className="btn btn-primary" style={{ fontSize: "0.8rem", padding: "6px 12px" }} onClick={handleSaveLines} disabled={saving}>
-                {saving ? "Saving..." : "Save Lines"}
-              </button>
+              {editMode && (
+                <button className="btn btn-primary" style={{ fontSize: "0.8rem", padding: "6px 12px" }} onClick={handleSaveLines} disabled={saving}>
+                  {saving ? "Saving..." : "Save Lines"}
+                </button>
+              )}
             </div>
             <table className="modern-table">
-              <thead><tr><th></th><th>Type</th><th>Description</th><th className="text-right">Amount</th></tr></thead>
+              <thead>
+                <tr>
+                  {editMode && <th></th>}
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th className="text-right">Amount</th>
+                </tr>
+              </thead>
               <tbody>
-                {lines.map((l, i) => {
-                  let desc = "", amount = 0;
-                  if (l.charge_type === "Treatment") { desc = l.treatment_name; amount = Number(l.treatment_cost||0)*Number(l.treatment_qty||1); }
-                  else if (l.charge_type === "Medicine") { desc = l.medicine_name; amount = Number(l.medicine_cost||0)*Number(l.medicine_qty||1); }
-                  else { desc = l.fee_name; amount = Number(l.fee_price||0); }
-                  return (
-                    <tr key={i}>
-                      <td><input type="checkbox" checked={l._include} onChange={e => setLines(ls => ls.map((x,j) => j===i ? {...x, _include: e.target.checked} : x))} /></td>
-                      <td><span style={{ fontSize: "0.75rem", background: l.charge_type==="Treatment"?"#dbeafe":l.charge_type==="Medicine"?"#dcfce7":"#fef9c3", padding: "2px 8px", borderRadius: 12 }}>{l.charge_type}</span></td>
-                      <td>{desc}</td>
-                      <td className="text-right">฿{amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    </tr>
-                  );
-                })}
-                {lines.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center", color: "#94a3b8", padding: 24 }}>No charge lines.</td></tr>}
+                {lines
+                  .filter(l => editMode || l._include)
+                  .map((l, i) => {
+                    let desc = "", amount = 0;
+                    if (l.charge_type === "Treatment") { desc = l.treatment_name; amount = Number(l.treatment_cost||0)*Number(l.treatment_qty||1); }
+                    else if (l.charge_type === "Medicine") { desc = l.medicine_name; amount = Number(l.medicine_cost||0)*Number(l.medicine_qty||1); }
+                    else { desc = l.fee_name; amount = Number(l.fee_price||0); }
+                    const realIdx = lines.indexOf(l);
+                    return (
+                      <tr key={i}>
+                        {editMode && (
+                          <td><input type="checkbox" checked={l._include} onChange={e => setLines(ls => ls.map((x,j) => j===realIdx ? {...x, _include: e.target.checked} : x))} /></td>
+                        )}
+                        <td><span style={{ fontSize: "0.75rem", background: l.charge_type==="Treatment"?"#dbeafe":l.charge_type==="Medicine"?"#dcfce7":"#fef9c3", padding: "2px 8px", borderRadius: 12 }}>{l.charge_type}</span></td>
+                        <td>{desc}</td>
+                        <td className="text-right">฿{amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      </tr>
+                    );
+                  })}
+                {lines.filter(l => editMode || l._include).length === 0 && (
+                  <tr><td colSpan={editMode ? 4 : 3} style={{ textAlign: "center", color: "#94a3b8", padding: 24 }}>No charge lines.</td></tr>
+                )}
               </tbody>
             </table>
 
-            <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-              <select className="form-control" style={{ flex: 1 }} value={feeCode} onChange={e => setFeeCode(e.target.value)}>
-                <option value="">+ Add Fee...</option>
-                {fees.map(f => <option key={f.fee_code} value={f.fee_code}>{f.fee_name} — ฿{Number(f.fee_price).toLocaleString()}</option>)}
-              </select>
-              <button className="btn btn-outline" onClick={handleAddFee}>Add Fee</button>
-            </div>
+            {editMode && (
+              <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+                <select className="form-control" style={{ flex: 1 }} value={feeCode} onChange={e => setFeeCode(e.target.value)}>
+                  <option value="">+ Add Fee...</option>
+                  {fees.map(f => <option key={f.fee_code} value={f.fee_code}>{f.fee_name} — ฿{Number(f.fee_price).toLocaleString()}</option>)}
+                </select>
+                <button className="btn btn-outline" onClick={handleAddFee}>Add Fee</button>
+              </div>
+            )}
           </div>
 
           <div className="card">
