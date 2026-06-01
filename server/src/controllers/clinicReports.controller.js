@@ -8,13 +8,13 @@ const handler = (fn) => async (req, res) => {
 };
 
 export const patients = handler(svc.listPatientsReport);
+export const patientsVisiting = handler(svc.listPatientsVisiting);
 export const medicalProblems = handler(svc.listMedicalProblems);
 export const topConditions = handler(svc.topConditions);
 export const medicines = handler(svc.listMedicinesReport);
 export const prescriptions = handler(svc.listPrescriptions);
 export const topMedicines = handler(svc.topMedicines);
 export const diagnoses = handler(svc.listDiagnoses);
-export const topDoctorsByPatients = handler(svc.topDoctorsByPatients);
 export const doctors = handler(svc.listDoctorsReport);
 export const patientsByDoctor = handler(svc.patientsByDoctor);
 export const mostAppointedDoctors = handler(svc.mostAppointedDoctors);

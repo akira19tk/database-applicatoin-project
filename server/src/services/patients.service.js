@@ -31,9 +31,10 @@ export async function getPatientByCode(code) {
 }
 
 export async function createPatient({ patient_name, gender, date_of_birth, blood_type_id } = {}) {
-  const { rows: [{ m }] } = await pool.query("SELECT MAX(id) as m FROM patient");
-  const next = (Number(m) || 0) + 1;
-  const patient_code = `PAT-${next.toString().padStart(3, "0")}`;
+  // Use the identity sequence for the id (atomic / race-safe) and derive the code
+  // from it, keeping the sequence in sync — see doctors.service for the rationale.
+  const { rows: [{ id: next }] } = await pool.query("SELECT nextval(pg_get_serial_sequence('patient','id')) AS id");
+  const patient_code = `PAT-${String(next).padStart(3, "0")}`;
   await pool.query(
     "INSERT INTO patient (patient_code, patient_name, gender, date_of_birth, blood_type_id, id) VALUES ($1,$2,$3,$4,$5,$6)",
     [patient_code, patient_name, gender, date_of_birth, blood_type_id || null, next]

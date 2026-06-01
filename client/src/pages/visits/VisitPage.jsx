@@ -68,10 +68,14 @@ export default function VisitPage({ mode }) {
     } catch (err) { toast.error(err.message); } finally { setSaving(false); }
   };
 
+  // After every save we re-fetch from the server so the table shows exactly what
+  // was persisted (a "saved" toast should never disagree with the database).
   const handleSaveAppointedDoctors = async () => {
     setSaving(true);
     try {
       await saveAppointedDoctor(code, { doctor_codes: appointedLines.map(l => l.doctor_code), notes_map: {} });
+      const d = await getAppointedDoctor(code);
+      setAppointedLines(d?.lines || []);
       toast.success("Appointed doctors saved.");
     } catch (e) { toast.error(e.message); } finally { setSaving(false); }
   };
@@ -80,6 +84,8 @@ export default function VisitPage({ mode }) {
     setSaving(true);
     try {
       await savePrescriptionChart(code, { lines: rxLines });
+      const d = await getPrescriptionChart(code);
+      setRxLines(d?.lines || []);
       toast.success("Prescription saved.");
     } catch (e) { toast.error(e.message); } finally { setSaving(false); }
   };
@@ -88,6 +94,8 @@ export default function VisitPage({ mode }) {
     setSaving(true);
     try {
       await saveTreatmentChart(code, { lines: txLines });
+      const d = await getTreatmentChart(code);
+      setTxLines(d?.lines || []);
       toast.success("Treatment chart saved.");
     } catch (e) { toast.error(e.message); } finally { setSaving(false); }
   };
@@ -96,6 +104,8 @@ export default function VisitPage({ mode }) {
     setSaving(true);
     try {
       await saveDiagnosisChart(code, { lines: dxLines });
+      const d = await getDiagnosisChart(code);
+      setDxLines(d?.lines || []);
       toast.success("Diagnosis chart saved.");
     } catch (e) { toast.error(e.message); } finally { setSaving(false); }
   };

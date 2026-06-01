@@ -37,9 +37,10 @@ export async function createVisit({ patient_code, visit_type, reported_symptoms,
   const patRes = await pool.query("SELECT id FROM patient WHERE patient_code=$1", [patient_code]);
   if (patRes.rowCount === 0) throw Object.assign(new Error("Patient not found"), { statusCode: 404 });
   const patient_id = patRes.rows[0].id;
-  const { rows: [{ m }] } = await pool.query("SELECT MAX(id) as m FROM visit");
-  const next = (Number(m) || 0) + 1;
-  const visit_code = `VST-${next.toString().padStart(3, "0")}`;
+  // Use the identity sequence for the id (atomic / race-safe) and derive the code
+  // from it, keeping the sequence in sync — see doctors.service for the rationale.
+  const { rows: [{ id: next }] } = await pool.query("SELECT nextval(pg_get_serial_sequence('visit','id')) AS id");
+  const visit_code = `VST-${String(next).padStart(3, "0")}`;
   await pool.query(
     `INSERT INTO visit (visit_code, patient_id, visit_type, reported_symptoms, blood_pressure, height, weight, temperature,id)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
@@ -91,7 +92,9 @@ export async function saveAppointedDoctor(visit_code, { doctor_codes = [], notes
     const ad_id = ar.rows[0].id;
     for (const dc of doctor_codes) {
       const dr = await client.query("SELECT id FROM doctor WHERE doctor_code=$1", [dc]);
-      if (!dr.rowCount) continue;
+      // Fail loudly instead of silently skipping — otherwise the save would
+      // report success while persisting nothing (the "saved but not saved" bug).
+      if (!dr.rowCount) throw Object.assign(new Error(`Doctor not found: ${dc}`), { statusCode: 400 });
       await client.query("INSERT INTO appointed_doctor_line (appointed_doctor_id, doctor_id, notes) VALUES ($1,$2,$3)",
         [ad_id, dr.rows[0].id, notes_map[dc]||null]);
     }
@@ -134,7 +137,7 @@ export async function savePrescriptionChart(visit_code, { lines = [] } = {}) {
     const pc_id = pr.rows[0].id;
     for (const line of lines) {
       const mr = await client.query("SELECT id FROM medicine WHERE medicine_code=$1", [line.medicine_code]);
-      if (!mr.rowCount) continue;
+      if (!mr.rowCount) throw Object.assign(new Error(`Medicine not found: ${line.medicine_code}`), { statusCode: 400 });
       await client.query("INSERT INTO prescription_chart_line (prescription_chart_id, medicine_id, quantity, dosage_notes) VALUES ($1,$2,$3,$4)",
         [pc_id, mr.rows[0].id, line.quantity, line.dosage_notes||null]);
     }
@@ -177,7 +180,7 @@ export async function saveTreatmentChart(visit_code, { lines = [] } = {}) {
     const tc_id = tr.rows[0].id;
     for (const line of lines) {
       const lr = await client.query("SELECT id FROM treatment WHERE treatment_code=$1", [line.treatment_code]);
-      if (!lr.rowCount) continue;
+      if (!lr.rowCount) throw Object.assign(new Error(`Treatment not found: ${line.treatment_code}`), { statusCode: 400 });
       await client.query("INSERT INTO treatment_chart_line (treatment_chart_id, treatment_id, quantity, notes) VALUES ($1,$2,$3,$4)",
         [tc_id, lr.rows[0].id, line.quantity||1, line.notes||null]);
     }
@@ -220,7 +223,7 @@ export async function saveDiagnosisChart(visit_code, { lines = [] } = {}) {
     const diag_id = dr.rows[0].id;
     for (const line of lines) {
       const cr = await client.query("SELECT id FROM medical_condition WHERE condition_code=$1", [line.condition_code]);
-      if (!cr.rowCount) continue;
+      if (!cr.rowCount) throw Object.assign(new Error(`Condition not found: ${line.condition_code}`), { statusCode: 400 });
       await client.query("INSERT INTO diagnosis_chart_line (diagnosis_chart_id, medical_condition_id) VALUES ($1,$2)",
         [diag_id, cr.rows[0].id]);
     }

@@ -147,7 +147,11 @@ export async function saveBillLines(bill_code, { lines = [] } = {}) {
         await client.query("INSERT INTO patient_bill_line (bill_header_id, charge_type, prescription_chart_line_id) VALUES ($1,'Medicine',$2)", [bill_id, line.pcl_id]);
       } else if (line.charge_type === "Fee" && line.fee_code) {
         const fr = await client.query("SELECT id FROM fee WHERE fee_code=$1", [line.fee_code]);
-        if (fr.rowCount) await client.query("INSERT INTO patient_bill_line (bill_header_id, charge_type, fee_id) VALUES ($1,'Fee',$2)", [bill_id, fr.rows[0].id]);
+        // Fail loudly instead of silently dropping the line (the "saved but not saved" bug).
+        if (!fr.rowCount) throw Object.assign(new Error(`Fee not found: ${line.fee_code}`), { statusCode: 400 });
+        await client.query("INSERT INTO patient_bill_line (bill_header_id, charge_type, fee_id) VALUES ($1,'Fee',$2)", [bill_id, fr.rows[0].id]);
+      } else {
+        throw Object.assign(new Error(`Invalid bill line (charge_type=${line.charge_type}); missing reference id/code`), { statusCode: 400 });
       }
     }
     await client.query("COMMIT");

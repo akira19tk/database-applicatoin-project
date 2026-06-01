@@ -30,9 +30,11 @@ export async function getDoctorByCode(code) {
 }
 
 export async function createDoctor({ doctor_name, gender, specialty, department_id } = {}) {
-  const { rows: [{ m }] } = await pool.query("SELECT MAX(id) as m FROM doctor");
-  const next = (Number(m) || 0) + 1;
-  const doctor_code = `DOC-${next.toString().padStart(3, "0")}`;
+  // Draw the next id from the table's identity sequence (atomic, so two concurrent
+  // creates can never get the same id) and derive the human code from it. This keeps
+  // the sequence in sync and avoids the duplicate-key bug that manual MAX(id)+1 caused.
+  const { rows: [{ id: next }] } = await pool.query("SELECT nextval(pg_get_serial_sequence('doctor','id')) AS id");
+  const doctor_code = `DOC-${String(next).padStart(3, "0")}`;
   await pool.query(
     "INSERT INTO doctor (id, doctor_code, doctor_name, gender, specialty, department_id) VALUES ($1,$2,$3,$4,$5,$6)",
     [next, doctor_code, doctor_name, gender, specialty || null, department_id || null]

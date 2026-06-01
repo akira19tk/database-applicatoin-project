@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch src/app.js",
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "test": "node --test --test-concurrency=1 tests/clinic.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -34,6 +34,12 @@ const REPORTS = [
     columns: [col("patient_code", "Code"), col("patient_name", "Name"), col("gender", "Gender"),
       col("date_of_birth", "DOB", "date"), col("blood_type_full", "Blood Type")],
   },
+  {
+    key: "patients-visiting", group: "Patients", label: "Patients Visiting (by date / type)",
+    filters: [f.from, f.to, f.visitType], run: api.reportPatientsVisiting,
+    columns: [col("patient_code", "Patient"), col("patient_name", "Name"), col("gender", "Gender"),
+      col("visit_code", "Visit"), col("visit_type", "Type"), col("created_at", "Date", "date")],
+  },
   // Diagnoses / Conditions
   {
     key: "medical-problems", group: "Diagnoses", label: "Medical Problems per Patient",
@@ -84,12 +90,6 @@ const REPORTS = [
     filters: [f.doctorCode, f.from, f.to], requires: ["doctorCode"], run: api.reportPatientsByDoctor,
     columns: [col("patient_code", "Patient"), col("patient_name", "Name"), col("gender", "Gender"),
       col("visit_code", "Visit"), col("visit_type", "Type"), col("created_at", "Date", "date")],
-  },
-  {
-    key: "top-doctors-by-patients", group: "Doctors", label: "Top N Doctors by Patients", analysis: true,
-    filters: [f.from, f.to, f.limit], run: api.reportTopDoctorsByPatients,
-    columns: [col("doctor_code", "Code"), col("doctor_name", "Doctor"), col("specialty", "Specialty"),
-      col("patient_count", "Patients", "number")],
   },
   {
     key: "most-appointed-doctors", group: "Doctors", label: "Most Appointed Doctors", analysis: true,

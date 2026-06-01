@@ -30,6 +30,23 @@ export async function listPatientsReport({ gender, bloodType } = {}) {
   return rows;
 }
 
+// 1b. List all patients visiting from date to date. Filter by OPD/IPD type.
+// One row per visit (a patient with several visits appears once per visit).
+export async function listPatientsVisiting({ from, to, type } = {}) {
+  const { rows } = await pool.query(
+    `SELECT p.patient_code, p.patient_name, p.gender,
+            v.visit_code, v.visit_type, v.created_at
+     FROM visit v
+     JOIN patient p ON p.id = v.patient_id
+     WHERE ($1::date IS NULL OR v.created_at::date >= $1)
+       AND ($2::date IS NULL OR v.created_at::date <= $2)
+       AND ($3::text IS NULL OR v.visit_type = $3)
+     ORDER BY v.created_at DESC, p.patient_code`,
+    [orNull(from), orNull(to), orNull(type)]
+  );
+  return rows;
+}
+
 // 2. List all medical problems per patient from date to date. Filter by patient ID.
 export async function listMedicalProblems({ from, to, patientCode } = {}) {
   const { rows } = await pool.query(
@@ -133,25 +150,6 @@ export async function listDiagnoses({ from, to, conditionCode, patientCode } = {
        AND ($4::text IS NULL OR p.patient_code = $4)
      ORDER BY v.created_at DESC, dc.diagnosis_chart_code`,
     [orNull(from), orNull(to), orNull(conditionCode), orNull(patientCode)]
-  );
-  return rows;
-}
-
-// 9. Analysis: Top N doctors with most patients from date to date.
-export async function topDoctorsByPatients({ from, to, limit } = {}) {
-  const { rows } = await pool.query(
-    `SELECT d.doctor_code, d.doctor_name, d.specialty,
-            COUNT(DISTINCT v.patient_id)::int AS patient_count
-     FROM appointed_doctor_line adl
-     JOIN appointed_doctor ad ON ad.id = adl.appointed_doctor_id
-     JOIN visit v ON v.id = ad.visit_id
-     JOIN doctor d ON d.id = adl.doctor_id
-     WHERE ($1::date IS NULL OR v.created_at::date >= $1)
-       AND ($2::date IS NULL OR v.created_at::date <= $2)
-     GROUP BY d.id, d.doctor_code, d.doctor_name, d.specialty
-     ORDER BY patient_count DESC, d.doctor_name
-     LIMIT $3`,
-    [orNull(from), orNull(to), normLimit(limit)]
   );
   return rows;
 }
