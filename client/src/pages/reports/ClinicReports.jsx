@@ -29,100 +29,100 @@ const col = (key, label, fmt) => ({ key, label, fmt });
 const REPORTS = [
   // Patients
   {
-    key: "patients", group: "Patients", label: "1. All Patients",
+    key: "patients", group: "Patients", label: "All Patients",
     filters: [f.gender, f.bloodType], run: api.reportPatients,
     columns: [col("patient_code", "Code"), col("patient_name", "Name"), col("gender", "Gender"),
       col("date_of_birth", "DOB", "date"), col("blood_type_full", "Blood Type")],
   },
   // Diagnoses / Conditions
   {
-    key: "medical-problems", group: "Diagnoses", label: "2. Medical Problems per Patient",
+    key: "medical-problems", group: "Diagnoses", label: "Medical Problems per Patient",
     filters: [f.from, f.to, f.patientCode], run: api.reportMedicalProblems,
     columns: [col("patient_code", "Patient"), col("patient_name", "Name"), col("condition_code", "Cond. Code"),
       col("condition_name", "Condition"), col("visit_code", "Visit"), col("created_at", "Date", "date")],
   },
   {
-    key: "top-conditions", group: "Diagnoses", label: "3. Top N Common Problems", analysis: true,
+    key: "top-conditions", group: "Diagnoses", label: "Top N Common Problems", analysis: true,
     filters: [f.from, f.to, f.limit], run: api.reportTopConditions,
     columns: [col("condition_code", "Code"), col("condition_name", "Condition"), col("occurrences", "Occurrences", "number")],
   },
   {
-    key: "diagnoses", group: "Diagnoses", label: "7/8. Diagnosis Records",
+    key: "diagnoses", group: "Diagnoses", label: "Diagnosis Records",
     filters: [f.from, f.to, f.conditionCode, f.patientCode], run: api.reportDiagnoses,
     columns: [col("diagnosis_chart_code", "Chart"), col("patient_code", "Patient"), col("patient_name", "Name"),
       col("condition_code", "Cond. Code"), col("condition_name", "Condition"), col("visit_code", "Visit"), col("created_at", "Date", "date")],
   },
   // Medicines
   {
-    key: "medicines", group: "Medicines", label: "4. All Medicines",
+    key: "medicines", group: "Medicines", label: "All Medicines",
     filters: [f.medicineType], run: api.reportMedicines,
     columns: [col("medicine_code", "Code"), col("medicine_name", "Name"), col("generic_name", "Generic"),
       col("medicine_type", "Type"), col("unit_cost", "Unit Cost", "currency")],
   },
   {
-    key: "prescriptions", group: "Medicines", label: "5. Prescriptions per Patient",
+    key: "prescriptions", group: "Medicines", label: "Prescriptions per Patient",
     filters: [f.from, f.to, f.patientCode], run: api.reportPrescriptions,
     columns: [col("patient_code", "Patient"), col("patient_name", "Name"), col("medicine_code", "Med. Code"),
       col("medicine_name", "Medicine"), col("medicine_type", "Type"), col("quantity", "Qty", "number"),
       col("dosage_notes", "Dosage"), col("visit_code", "Visit"), col("created_at", "Date", "date")],
   },
   {
-    key: "top-medicines", group: "Medicines", label: "6. Top N Prescribed Medicines", analysis: true,
+    key: "top-medicines", group: "Medicines", label: "Top N Prescribed Medicines", analysis: true,
     filters: [f.from, f.to, f.limit], run: api.reportTopMedicines,
     columns: [col("medicine_code", "Code"), col("medicine_name", "Medicine"), col("medicine_type", "Type"),
       col("times_prescribed", "Times Prescribed", "number"), col("total_quantity", "Total Qty", "number")],
   },
   // Doctors
   {
-    key: "doctors", group: "Doctors", label: "10. All Doctors",
+    key: "doctors", group: "Doctors", label: "All Doctors",
     filters: [f.gender, f.department], run: api.reportDoctors,
     columns: [col("doctor_code", "Code"), col("doctor_name", "Name"), col("gender", "Gender"),
       col("specialty", "Specialty"), col("department_name", "Department")],
   },
   {
-    key: "patients-by-doctor", group: "Doctors", label: "11. Patients Treated by Doctor",
+    key: "patients-by-doctor", group: "Doctors", label: "Patients Treated by Doctor",
     filters: [f.doctorCode, f.from, f.to], requires: ["doctorCode"], run: api.reportPatientsByDoctor,
     columns: [col("patient_code", "Patient"), col("patient_name", "Name"), col("gender", "Gender"),
       col("visit_code", "Visit"), col("visit_type", "Type"), col("created_at", "Date", "date")],
   },
   {
-    key: "top-doctors-by-patients", group: "Doctors", label: "9. Top N Doctors by Patients", analysis: true,
+    key: "top-doctors-by-patients", group: "Doctors", label: "Top N Doctors by Patients", analysis: true,
     filters: [f.from, f.to, f.limit], run: api.reportTopDoctorsByPatients,
     columns: [col("doctor_code", "Code"), col("doctor_name", "Doctor"), col("specialty", "Specialty"),
       col("patient_count", "Patients", "number")],
   },
   {
-    key: "most-appointed-doctors", group: "Doctors", label: "12. Most Appointed Doctors", analysis: true,
+    key: "most-appointed-doctors", group: "Doctors", label: "Most Appointed Doctors", analysis: true,
     filters: [f.from, f.to, f.limit], run: api.reportMostAppointedDoctors,
     columns: [col("doctor_code", "Code"), col("doctor_name", "Doctor"), col("specialty", "Specialty"),
       col("appointment_count", "Appointments", "number")],
   },
   // Visits
   {
-    key: "visits", group: "Visits", label: "16/17. Visits (by date / doctor / type)",
+    key: "visits", group: "Visits", label: "Visits (by date / doctor / type)",
     filters: [f.from, f.to, f.visitType, f.doctorCode], run: api.reportVisits,
     columns: [col("visit_code", "Visit"), col("visit_type", "Type"), col("created_at", "Date", "date"),
       col("patient_code", "Patient"), col("patient_name", "Name")],
   },
   {
-    key: "visits-monthly", group: "Visits", label: "18. OPD vs IPD by Month", analysis: true,
+    key: "visits-monthly", group: "Visits", label: "OPD vs IPD by Month", analysis: true,
     filters: [f.from, f.to], run: api.reportVisitsMonthly,
     columns: [col("month", "Month"), col("opd", "OPD", "number"), col("ipd", "IPD", "number"), col("total", "Total", "number")],
   },
   // Billing
   {
-    key: "print-bill", group: "Billing", label: "13. Print Patient Bill (by Code)", type: "bill",
+    key: "print-bill", group: "Billing", label: "Print Patient Bill (by Code)", type: "bill",
     filters: [{ name: "billCode", label: "Bill Code", type: "text", placeholder: "e.g. BLL-001" }], requires: ["billCode"],
   },
   {
-    key: "bills", group: "Billing", label: "14. All Bills (by date / patient)",
+    key: "bills", group: "Billing", label: "All Bills (by date / patient)",
     filters: [f.from, f.to, f.patientCode], run: api.reportBills,
     columns: [col("bill_code", "Bill"), col("patient_code", "Patient"), col("patient_name", "Name"),
       col("visit_code", "Visit"), col("visit_type", "Type"), col("created_at", "Date", "date"),
       col("subtotal", "Subtotal", "currency"), col("tax", "Tax %"), col("total", "Total", "currency")],
   },
   {
-    key: "revenue-by-charge-type", group: "Billing", label: "15. Revenue by Charge Type", analysis: true,
+    key: "revenue-by-charge-type", group: "Billing", label: "Revenue by Charge Type", analysis: true,
     filters: [f.from, f.to], run: api.reportRevenueByChargeType,
     columns: [col("charge_type", "Charge Type"), col("line_count", "Lines", "number"), col("revenue", "Revenue", "currency")],
   },
