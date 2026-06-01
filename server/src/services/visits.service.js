@@ -77,6 +77,12 @@ export async function getAppointedDoctor(visit_code) {
 export async function saveAppointedDoctor(visit_code, { doctor_codes = [], notes_map = {} } = {}) {
   const vr = await pool.query("SELECT id FROM visit WHERE visit_code=$1", [visit_code]);
   if (!vr.rowCount) throw Object.assign(new Error("Visit not found"), { statusCode: 404 });
+  if (vr.rows[0].read_only) {
+  throw Object.assign(
+    new Error("This visit is locked because a bill has already been created. Charts can no longer be edited."),
+    { statusCode: 403 }
+  );
+}
   const visit_id = vr.rows[0].id;
   const client = await pool.connect();
   try {
@@ -122,6 +128,12 @@ export async function getPrescriptionChart(visit_code) {
 export async function savePrescriptionChart(visit_code, { lines = [] } = {}) {
   const vr = await pool.query("SELECT id FROM visit WHERE visit_code=$1", [visit_code]);
   if (!vr.rowCount) throw Object.assign(new Error("Visit not found"), { statusCode: 404 });
+  if (vr.rows[0].read_only) {
+  throw Object.assign(
+    new Error("This visit is locked because a bill has already been created. Charts can no longer be edited."),
+    { statusCode: 403 }
+  );
+}
   const visit_id = vr.rows[0].id;
   const client = await pool.connect();
   try {
@@ -165,6 +177,12 @@ export async function getTreatmentChart(visit_code) {
 export async function saveTreatmentChart(visit_code, { lines = [] } = {}) {
   const vr = await pool.query("SELECT id FROM visit WHERE visit_code=$1", [visit_code]);
   if (!vr.rowCount) throw Object.assign(new Error("Visit not found"), { statusCode: 404 });
+  if (vr.rows[0].read_only) {
+  throw Object.assign(
+    new Error("This visit is locked because a bill has already been created. Charts can no longer be edited."),
+    { statusCode: 403 }
+  );
+}
   const visit_id = vr.rows[0].id;
   const client = await pool.connect();
   try {
@@ -208,6 +226,12 @@ export async function getDiagnosisChart(visit_code) {
 export async function saveDiagnosisChart(visit_code, { lines = [] } = {}) {
   const vr = await pool.query("SELECT id FROM visit WHERE visit_code=$1", [visit_code]);
   if (!vr.rowCount) throw Object.assign(new Error("Visit not found"), { statusCode: 404 });
+  if (vr.rows[0].read_only) {
+  throw Object.assign(
+    new Error("This visit is locked because a bill has already been created. Charts can no longer be edited."),
+    { statusCode: 403 }
+  );
+}
   const visit_id = vr.rows[0].id;
   const client = await pool.connect();
   try {

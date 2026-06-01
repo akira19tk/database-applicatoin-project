@@ -121,6 +121,8 @@ export async function createBillForVisit(visit_code) {
        WHERE pc.visit_id = $2`,
       [bill_id, visit_id]
     );
+    
+    await client.query("UPDATE visit SET read_only = true WHERE id = $1", [visit_id]);
 
     await client.query("COMMIT");
     return { bill_code };

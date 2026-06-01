@@ -205,7 +205,13 @@ export default function VisitPage({ mode }) {
 
         {/* Tab 1: Appointed Doctors */}
         {!isCreate && tab === 1 && (
-          <ChartEditor title="Appointed Doctors" lines={appointedLines} isView={isView}
+          <>
+          {!!existingBillCode && (
+              <div style={{ padding: "10px 14px", background: "#fef9c3", borderRadius: 6, marginBottom: 12, color: "#92400e", fontSize: "0.875rem" }}>
+                :warning: This visit has a bill (<strong>{existingBillCode}</strong>). Doctor chart is locked and cannot be edited.
+              </div>
+            )}
+          <ChartEditor title="Appointed Doctors" lines={appointedLines} isView={isView || !!existingBillCode}
             renderLine={(line, i) => (
               <tr key={i}>
                 <td>{line.doctor_name} ({line.doctor_code})</td>
@@ -220,11 +226,18 @@ export default function VisitPage({ mode }) {
             addForm={!isView && <AddDoctorForm doctors={allDoctors} selected={appointedLines.map(l => l.doctor_code)}
               onAdd={d => setAppointedLines(ls => [...ls, d])} />}
             onSave={handleSaveAppointedDoctors} saving={saving} />
+          </>
         )}
 
         {/* Tab 2: Prescription Chart */}
         {!isCreate && tab === 2 && (
-          <ChartEditor title="Prescription Chart" lines={rxLines} isView={isView}
+          <>
+          {!!existingBillCode && (
+              <div style={{ padding: "10px 14px", background: "#fef9c3", borderRadius: 6, marginBottom: 12, color: "#92400e", fontSize: "0.875rem" }}>
+                :warning: This visit has a bill (<strong>{existingBillCode}</strong>). Prescription chart is locked and cannot be edited.
+              </div>
+            )}
+          <ChartEditor title="Prescription Chart" lines={rxLines} isView={isView || !!existingBillCode}
             renderLine={(line, i) => (
               <tr key={i}>
                 <td>{line.medicine_name} ({line.medicine_code})</td>
@@ -240,11 +253,18 @@ export default function VisitPage({ mode }) {
             headers={isView ? ["Medicine", "Type", "Qty", "Dosage Notes"] : ["Medicine", "Type", "Qty", "Dosage Notes", ""]}
             addForm={!isView && <AddMedicineForm medicines={medicines} onAdd={m => setRxLines(ls => [...ls, m])} />}
             onSave={handleSavePrescription} saving={saving} />
+          </>
         )}
 
         {/* Tab 3: Treatment Chart */}
         {!isCreate && tab === 3 && (
-          <ChartEditor title="Treatment Chart" lines={txLines} isView={isView}
+          <>
+          {!!existingBillCode && (
+              <div style={{ padding: "10px 14px", background: "#fef9c3", borderRadius: 6, marginBottom: 12, color: "#92400e", fontSize: "0.875rem" }}>
+                :warning: This visit has a bill (<strong>{existingBillCode}</strong>). Treatment chart is locked and cannot be edited.
+              </div>
+            )}
+          <ChartEditor title="Treatment Chart" lines={txLines} isView={isView || !!existingBillCode}
             renderLine={(line, i) => (
               <tr key={i}>
                 <td>{line.treatment_name} ({line.treatment_code})</td>
@@ -260,11 +280,18 @@ export default function VisitPage({ mode }) {
             headers={isView ? ["Treatment", "Unit Cost", "Qty", "Notes"] : ["Treatment", "Unit Cost", "Qty", "Notes", ""]}
             addForm={!isView && <AddTreatmentForm treatments={treatments} onAdd={t => setTxLines(ls => [...ls, t])} />}
             onSave={handleSaveTreatment} saving={saving} />
+          </>
         )}
 
         {/* Tab 4: Diagnosis Chart */}
         {!isCreate && tab === 4 && (
-          <ChartEditor title="Diagnosis Chart" lines={dxLines} isView={isView}
+          <>
+          {!!existingBillCode && (
+              <div style={{ padding: "10px 14px", background: "#fef9c3", borderRadius: 6, marginBottom: 12, color: "#92400e", fontSize: "0.875rem" }}>
+                :warning: This visit has a bill (<strong>{existingBillCode}</strong>). Diagnosis chart is locked and cannot be edited.
+              </div>
+            )}
+          <ChartEditor title="Diagnosis Chart" lines={dxLines} isView={isView || !!existingBillCode}
             renderLine={(line, i) => (
               <tr key={i}>
                 <td>{line.condition_name} ({line.condition_code})</td>
@@ -279,6 +306,7 @@ export default function VisitPage({ mode }) {
             addForm={!isView && <AddConditionForm conditions={conditions} selected={dxLines.map(l => l.condition_code)}
               onAdd={c => setDxLines(ls => [...ls, c])} />}
             onSave={handleSaveDiagnosis} saving={saving} />
+          </>
         )}
 
         {/* Tab 5: Bill */}
