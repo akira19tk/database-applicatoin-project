@@ -154,6 +154,25 @@ export async function listDiagnoses({ from, to, conditionCode, patientCode } = {
   return rows;
 }
 
+// 9. List all diagnosis records from date to date. Filter by diagnosis chart.
+export async function listDiagnosesByChart({ from, to, diagnosisChartCode } = {}) {
+  const { rows } = await pool.query(
+    `SELECT dc.diagnosis_chart_code, p.patient_code, p.patient_name,
+            mc.condition_code, mc.condition_name, v.visit_code, v.created_at
+     FROM diagnosis_chart_line dcl
+     JOIN diagnosis_chart dc ON dc.id = dcl.diagnosis_chart_id
+     JOIN visit v ON v.id = dc.visit_id
+     JOIN patient p ON p.id = v.patient_id
+     JOIN medical_condition mc ON mc.id = dcl.medical_condition_id
+     WHERE ($1::date IS NULL OR v.created_at::date >= $1)
+       AND ($2::date IS NULL OR v.created_at::date <= $2)
+       AND ($3::text IS NULL OR dc.diagnosis_chart_code = $3)
+     ORDER BY dc.diagnosis_chart_code, mc.condition_code`,
+    [orNull(from), orNull(to), orNull(diagnosisChartCode)]
+  );
+  return rows;
+}
+
 // 10. List all doctors. Filter by gender or department.
 export async function listDoctorsReport({ gender, departmentId } = {}) {
   const { rows } = await pool.query(

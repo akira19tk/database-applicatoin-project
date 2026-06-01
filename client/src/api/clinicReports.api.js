@@ -25,6 +25,7 @@ export const reportMedicines = (p) => get("medicines", p);                     /
 export const reportPrescriptions = (p) => get("prescriptions", p);             // 5
 export const reportTopMedicines = (p) => get("top-medicines", p);             // 6
 export const reportDiagnoses = (p) => get("diagnoses", p);                     // 7 & 8
+export const reportDiagnosesByChart = (p) => get("diagnoses-by-chart", p);     // 9
 export const reportDoctors = (p) => get("doctors", p);                         // 10
 export const reportPatientsByDoctor = (p) => get("patients-by-doctor", p);     // 11
 export const reportMostAppointedDoctors = (p) => get("most-appointed-doctors", p); // 12
