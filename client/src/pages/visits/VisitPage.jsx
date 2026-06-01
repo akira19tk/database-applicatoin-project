@@ -77,6 +77,7 @@ export default function VisitPage({ mode }) {
       const d = await getAppointedDoctor(code);
       setAppointedLines(d?.lines || []);
       toast.success("Appointed doctors saved.");
+      navigate(`/visits/${code}`);
     } catch (e) { toast.error(e.message); } finally { setSaving(false); }
   };
 
@@ -87,6 +88,7 @@ export default function VisitPage({ mode }) {
       const d = await getPrescriptionChart(code);
       setRxLines(d?.lines || []);
       toast.success("Prescription saved.");
+      navigate(`/visits/${code}`);
     } catch (e) { toast.error(e.message); } finally { setSaving(false); }
   };
 
@@ -107,6 +109,7 @@ export default function VisitPage({ mode }) {
       const d = await getDiagnosisChart(code);
       setDxLines(d?.lines || []);
       toast.success("Diagnosis chart saved.");
+      navigate(`/visits/${code}`);
     } catch (e) { toast.error(e.message); } finally { setSaving(false); }
   };
 
@@ -116,6 +119,7 @@ export default function VisitPage({ mode }) {
       setExistingBillCode(res.bill_code);
       toast.success("Bill generated.");
       navigate(`/patient-bills/${res.bill_code}`);
+      navigate(`/visits/${code}`);
     } catch (e) { toast.error(e.message); }
   };
 
