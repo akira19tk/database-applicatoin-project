@@ -205,6 +205,23 @@ export async function patientsByDoctor({ doctorCode, from, to } = {}) {
   return rows;
 }
 
+// 13. Analysis: Most frequently visited patients from date to date (Top N by visit count).
+export async function mostFrequentPatients({ from, to, limit } = {}) {
+  const { rows } = await pool.query(
+    `SELECT p.patient_code, p.patient_name, p.gender,
+            COUNT(v.id)::int AS visit_count
+     FROM visit v
+     JOIN patient p ON p.id = v.patient_id
+     WHERE ($1::date IS NULL OR v.created_at::date >= $1)
+       AND ($2::date IS NULL OR v.created_at::date <= $2)
+     GROUP BY p.id, p.patient_code, p.patient_name, p.gender
+     ORDER BY visit_count DESC, p.patient_name
+     LIMIT $3`,
+    [orNull(from), orNull(to), normLimit(limit)]
+  );
+  return rows;
+}
+
 // 12. Analysis: Most appointed doctors from date to date.
 export async function mostAppointedDoctors({ from, to, limit } = {}) {
   const { rows } = await pool.query(

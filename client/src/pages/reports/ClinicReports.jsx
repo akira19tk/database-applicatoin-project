@@ -35,6 +35,12 @@ const REPORTS = [
     columns: [col("patient_code", "Code"), col("patient_name", "Name"), col("gender", "Gender"),
       col("date_of_birth", "DOB", "date"), col("blood_type_full", "Blood Type")],
   },
+  {
+    key: "most-frequent-patients", group: "Patients", label: "Most Frequently Visiting Patients", //analysis: true,
+    filters: [f.from, f.to, f.limit], run: api.reportMostFrequentPatients,
+    columns: [col("patient_code", "Patient"), col("patient_name", "Name"), col("gender", "Gender"),
+      col("visit_count", "Visits", "number")],
+  },
   // Diagnoses / Conditions
   {
     key: "medical-problems", group: "Diagnoses", label: "List of Medical Problems per Patient",

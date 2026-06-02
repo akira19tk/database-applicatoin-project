@@ -14,6 +14,7 @@ r.get("/diagnoses-by-chart", c.diagnosesByChart);        // 9
 r.get("/doctors", c.doctors);                            // 10
 r.get("/patients-by-doctor", c.patientsByDoctor);        // 11
 r.get("/most-appointed-doctors", c.mostAppointedDoctors); // 12
+r.get("/most-frequent-patients", c.mostFrequentPatients); // 13
 r.get("/bills", c.bills);                                // 14
 r.get("/revenue-by-charge-type", c.revenueByChargeType); // 15
 r.get("/visits", c.visits);                              // 16 & 17

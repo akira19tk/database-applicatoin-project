@@ -19,6 +19,7 @@ export const diagnosesByChart = handler(svc.listDiagnosesByChart);
 export const doctors = handler(svc.listDoctorsReport);
 export const patientsByDoctor = handler(svc.patientsByDoctor);
 export const mostAppointedDoctors = handler(svc.mostAppointedDoctors);
+export const mostFrequentPatients = handler(svc.mostFrequentPatients);
 export const bills = handler(svc.listBillsReport);
 export const revenueByChargeType = handler(svc.revenueByChargeType);
 export const visits = handler(svc.listVisitsReport);
