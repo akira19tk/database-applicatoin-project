@@ -216,7 +216,7 @@ export default function VisitPage({ mode }) {
               <tr key={i}>
                 <td>{line.doctor_name} ({line.doctor_code})</td>
                 <td>{line.specialty || "-"}</td>
-                {!isView && (
+                {!(isView || existingBillCode) && (
                   <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
                     onClick={() => setAppointedLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
                 )}
@@ -244,7 +244,7 @@ export default function VisitPage({ mode }) {
                 <td>{line.medicine_type}</td>
                 <td>{line.quantity}</td>
                 <td style={{ fontSize: "0.85rem", color: "#64748b" }}>{line.dosage_notes || "-"}</td>
-                {!isView && (
+                {!(isView || existingBillCode) && (
                   <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
                     onClick={() => setRxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
                 )}
@@ -271,7 +271,7 @@ export default function VisitPage({ mode }) {
                 <td>฿{Number(line.unit_cost).toLocaleString()}</td>
                 <td>{line.quantity}</td>
                 <td style={{ fontSize: "0.85rem", color: "#64748b" }}>{line.notes || "-"}</td>
-                {!isView && (
+                {!(isView || existingBillCode) && (
                   <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
                     onClick={() => setTxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
                 )}
@@ -296,7 +296,7 @@ export default function VisitPage({ mode }) {
               <tr key={i}>
                 <td>{line.condition_name} ({line.condition_code})</td>
                 <td style={{ fontSize: "0.85rem", color: "#64748b", maxWidth: 300 }}>{line.description || "-"}</td>
-                {!isView && (
+                {!(isView || existingBillCode) && (
                   <td><button className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "2px 8px", color: "#ef4444", borderColor: "#ef4444" }}
                     onClick={() => setDxLines(ls => ls.filter((_, j) => j !== i))}>Remove</button></td>
                 )}
