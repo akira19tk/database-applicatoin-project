@@ -16,6 +16,7 @@ const f = {
   patientCode: { name: "patientCode", label: "Patient Code", type: "text", placeholder: "e.g. PAT-001" },
   doctorCode: { name: "doctorCode", label: "Doctor Code", type: "text", placeholder: "e.g. DOC-001" },
   conditionCode: { name: "conditionCode", label: "Condition Code", type: "text", placeholder: "e.g. MC-001" },
+  diagnosisChartCode: { name: "diagnosisChartCode", label: "Diagnosis Chart Code", type: "text", placeholder: "e.g. DDC-001" },
   gender: { name: "gender", label: "Gender", type: "select", options: GENDER_OPTS },
   bloodType: { name: "bloodType", label: "Blood Type", type: "select", lookup: "bloodTypes" },
   department: { name: "departmentId", label: "Department", type: "select", lookup: "departments" },
@@ -49,6 +50,12 @@ const REPORTS = [
   {
     key: "diagnoses", group: "Diagnoses", label: "Diagnosis Records",
     filters: [f.from, f.to, f.conditionCode, f.patientCode], run: api.reportDiagnoses,
+    columns: [col("diagnosis_chart_code", "Chart"), col("patient_code", "Patient"), col("patient_name", "Name"),
+      col("condition_code", "Cond. Code"), col("condition_name", "Condition"), col("visit_code", "Visit"), col("created_at", "Date", "date")],
+  },
+  {
+    key: "diagnoses-by-chart", group: "Diagnoses", label: "List of All Diagnosis by Chart",
+    filters: [f.from, f.to, f.diagnosisChartCode], run: api.reportDiagnosesByChart,
     columns: [col("diagnosis_chart_code", "Chart"), col("patient_code", "Patient"), col("patient_name", "Name"),
       col("condition_code", "Cond. Code"), col("condition_name", "Condition"), col("visit_code", "Visit"), col("created_at", "Date", "date")],
   },

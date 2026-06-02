@@ -10,6 +10,7 @@ r.get("/medicines", c.medicines);                        // 4
 r.get("/prescriptions", c.prescriptions);                // 5
 r.get("/top-medicines", c.topMedicines);                 // 6
 r.get("/diagnoses", c.diagnoses);                        // 7 & 8
+r.get("/diagnoses-by-chart", c.diagnosesByChart);        // 9
 r.get("/doctors", c.doctors);                            // 10
 r.get("/patients-by-doctor", c.patientsByDoctor);        // 11
 r.get("/most-appointed-doctors", c.mostAppointedDoctors); // 12
