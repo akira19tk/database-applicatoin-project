@@ -2,7 +2,7 @@ import { pool } from "../db/pool.js";
 
 // ─── READ (list + get by code) ────────────────────────────────────────────────
 
-export const listDepartments = async ({ search = "", page = 1, limit = 10 } = {}) => {
+export const listDepartments = async ({ search = "", page = 1, limit = 10,  sortBy = "department_code",sortDir = "asc"  } = {}) => {
   const s = `%${search}%`;
   const offset = (Number(page) - 1) * Number(limit);
   const { rows: [{ total }] } = await pool.query(
@@ -11,7 +11,8 @@ export const listDepartments = async ({ search = "", page = 1, limit = 10 } = {}
   const { rows } = await pool.query(
     `SELECT id, department_code, department_name, location_description FROM department
      WHERE department_code ILIKE $1 OR department_name ILIKE $1
-     ORDER BY department_name LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
+     ORDER BY ${sortBy} ${sortDir}
+     LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
   );
   return { data: rows, total: Number(total), page: Number(page), limit: Number(limit), totalPages: Math.ceil(Number(total) / Number(limit)) };
 };
@@ -23,7 +24,17 @@ export const getDepartmentByCode = async (code) => {
   return rows[0] ?? null;
 };
 
-export const listMedicines = async ({ search = "", page = 1, limit = 10 } = {}) => {
+export const listMedicines = async ({ search = "", page = 1, limit = 10,  sortBy = "medicine_code",sortDir = "asc"  } = {}) => {
+  const allowedSorts = {
+    medicine_code: "medicine_code",
+    medicine_name: "medicine_name",
+    generic_name: "generic_name",
+    medicine_type: "medicine_type",
+    unit_cost: "unit_cost",
+  };
+
+  const orderBy = allowedSorts[sortBy] || "medicine_name";
+  const direction = sortDir === "desc" ? "DESC" : "ASC";
   const s = `%${search}%`;
   const offset = (Number(page) - 1) * Number(limit);
   const { rows: [{ total }] } = await pool.query(
@@ -32,7 +43,8 @@ export const listMedicines = async ({ search = "", page = 1, limit = 10 } = {}) 
   const { rows } = await pool.query(
     `SELECT id, medicine_code, medicine_name, generic_name, medicine_type, unit_cost FROM medicine
      WHERE medicine_code ILIKE $1 OR medicine_name ILIKE $1 OR generic_name ILIKE $1 OR medicine_type ILIKE $1
-     ORDER BY medicine_name LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
+     ORDER BY ${orderBy} ${direction}
+     LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
   );
   return { data: rows, total: Number(total), page: Number(page), limit: Number(limit), totalPages: Math.ceil(Number(total) / Number(limit)) };
 };
@@ -44,17 +56,26 @@ export const getMedicineByCode = async (code) => {
   return rows[0] ?? null;
 };
 
-export const listTreatments = async ({ search = "", page = 1, limit = 10 } = {}) => {
-  const s = `%${search}%`;
+export const listTreatments = async ({ search = "", page = 1, limit = 10,  sortBy = "treatment_code",sortDir = "asc" } = {}) => {
+    const allowedSorts = {
+    treatment_code: "treatment_code",
+    treatment_name: "treatment_name",
+    unit_cost: "unit_cost",
+  };
+  const orderBy = allowedSorts[sortBy] || "treatment_name";
+  const direction = sortDir === "desc" ? "DESC" : "ASC";const s = `%${search}%`;
   const offset = (Number(page) - 1) * Number(limit);
   const { rows: [{ total }] } = await pool.query(
     `SELECT COUNT(*) as total FROM treatment WHERE treatment_code ILIKE $1 OR treatment_name ILIKE $1`, [s]
   );
   const { rows } = await pool.query(
-    `SELECT id, treatment_code, treatment_name, unit_cost FROM treatment
-     WHERE treatment_code ILIKE $1 OR treatment_name ILIKE $1
-     ORDER BY treatment_name LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
-  );
+    `SELECT id, treatment_code, treatment_name, unit_cost
+    FROM treatment
+    WHERE treatment_code ILIKE $1 OR treatment_name ILIKE $1
+    ORDER BY ${orderBy} ${direction}
+    LIMIT $2 OFFSET $3`,
+  [s, Number(limit), offset]
+);
   return { data: rows, total: Number(total), page: Number(page), limit: Number(limit), totalPages: Math.ceil(Number(total) / Number(limit)) };
 };
 
@@ -65,7 +86,15 @@ export const getTreatmentByCode = async (code) => {
   return rows[0] ?? null;
 };
 
-export const listFees = async ({ search = "", page = 1, limit = 10 } = {}) => {
+export const listFees = async ({ search = "", page = 1, limit = 10,  sortBy = "fee_code",sortDir = "asc"  } = {}) => {
+  const allowedSorts = {
+    fee_code: "fee_code",
+    fee_name: "fee_name",
+    fee_price: "fee_price",
+  };
+
+  const orderBy = allowedSorts[sortBy] || "fee_name";
+  const direction = sortDir === "desc" ? "DESC" : "ASC";
   const s = `%${search}%`;
   const offset = (Number(page) - 1) * Number(limit);
   const { rows: [{ total }] } = await pool.query(
@@ -74,7 +103,8 @@ export const listFees = async ({ search = "", page = 1, limit = 10 } = {}) => {
   const { rows } = await pool.query(
     `SELECT id, fee_code, fee_name, fee_price FROM fee
      WHERE fee_code ILIKE $1 OR fee_name ILIKE $1
-     ORDER BY fee_name LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
+     ORDER BY ${orderBy} ${direction}
+     LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
   );
   return { data: rows, total: Number(total), page: Number(page), limit: Number(limit), totalPages: Math.ceil(Number(total) / Number(limit)) };
 };
@@ -86,7 +116,15 @@ export const getFeeByCode = async (code) => {
   return rows[0] ?? null;
 };
 
-export const listMedicalConditions = async ({ search = "", page = 1, limit = 10 } = {}) => {
+export const listMedicalConditions = async ({ search = "", page = 1, limit = 10,  sortBy = "condition_code",sortDir = "asc"  } = {}) => {
+  const allowedSorts = {
+    condition_code: "condition_code",
+    condition_name: "condition_name",
+    description: "description",
+  };
+
+  const orderBy = allowedSorts[sortBy] || "condition_name";
+  const direction = sortDir === "desc" ? "DESC" : "ASC";
   const s = `%${search}%`;
   const offset = (Number(page) - 1) * Number(limit);
   const { rows: [{ total }] } = await pool.query(
@@ -95,7 +133,8 @@ export const listMedicalConditions = async ({ search = "", page = 1, limit = 10 
   const { rows } = await pool.query(
     `SELECT id, condition_code, condition_name, description FROM medical_condition
      WHERE condition_code ILIKE $1 OR condition_name ILIKE $1
-     ORDER BY condition_name LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
+     ORDER BY ${orderBy} ${direction}
+     LIMIT $2 OFFSET $3`, [s, Number(limit), offset]
   );
   return { data: rows, total: Number(total), page: Number(page), limit: Number(limit), totalPages: Math.ceil(Number(total) / Number(limit)) };
 };
